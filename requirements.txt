@@ -1,0 +1,6 @@
+pandas
+numpy
+requests
+
+python-binance
+# Optional: ccxt if we switch later, but using requests for now
