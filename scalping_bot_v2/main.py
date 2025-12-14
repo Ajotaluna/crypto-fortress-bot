@@ -44,8 +44,6 @@ class ScalpingBot:
                         curr_price = await self.market.get_current_price(sym)
                         if curr_price > 0:
                             entry = pos['entry_price']
-                            # Assume 1 unit for pnl sizing approximation or use notional
-                            # For reporting pct, direction matters most
                             qty = pos.get('amount', 0)
                             if pos['side'] == 'LONG':
                                 unrealized_pnl += (curr_price - entry) * qty
@@ -120,7 +118,6 @@ class ScalpingBot:
                         continue
 
                 # 4. Stagnation Exit (Opportunity Cost)
-                # If > 10 mins and ROI < 2% (Stuck), close it
                 if duration_sec > 600 and roi < 2.0:
                     await self.market.close_position(symbol, f"STAGNATION (Time {duration_sec/60:.1f}m)")
                     continue
@@ -132,86 +129,69 @@ class ScalpingBot:
             await asyncio.sleep(config.CHECK_INTERVAL)
 
     async def scan_loop(self):
-        """Market Scanner"""
-        loop = asyncio.get_running_loop()
-        
+        """SCANNING LOOP: Finds Opportunities"""
+        logger.info("Started Scalp Scanner...")
         while self.running:
-            if len(self.market.positions) < config.MAX_OPEN_POSITIONS:
-                symbols = await self.market.get_top_vol_symbols()
-                
-                tasks = []
-                # Fetch first
-                pending_symbols = []
-                for symbol in symbols[:30]:
-                    if symbol in self.market.positions: continue
-                    pending_symbols.append(symbol)
-                
-                if not pending_symbols: 
-                    await asyncio.sleep(config.SCAN_INTERVAL)
-                    continue
-
-                for symbol in pending_symbols:
-                    df = await self.market.get_klines(symbol, interval=config.TIMEFRAME)
-                    if df.empty: continue
-                    
-                    # Parallel Analyze
-                    tasks.append(
-                        loop.run_in_executor(self.executor, self.strategy.analyze, df)
-                    )
-                
-                if tasks:
-                    results = await asyncio.gather(*tasks)
-                    
-                    for i, signal in enumerate(results):
-                         # Re-map result to symbol (assuming order preservation in gather)
-                         # This implies synchronous iteration order which is true for tasks list
-                        if signal and signal['score'] >= config.MIN_SCORE:
-                             # Re-fetch price for accuracy or use last close
-                             # Ideally we pass 'df' to callback, but strategy just returns signal.
-                             # We can infer symbol from loop index if we tracked it, 
-                             # but let's assume 'analyze' returns minimal info. 
-                             # Since we process 'pending_symbols' in order, we can map:
-                             # Wait, pending_symbols loop fetched DF. 
-                             # We need to map back. simpler:
-                             pass # Logic complexity. Let's fix loop structure below.
-
-                # Correct Parallel Loop Structure
-                # We need to pair Symbol -> DF -> Task
-                scan_candidates = []
-                for symbol in pending_symbols:
-                    df = await self.market.get_klines(symbol, interval=config.TIMEFRAME)
-                    if not df.empty:
-                        scan_candidates.append({'symbol': symbol, 'df': df})
-                
-                if scan_candidates:
-                    # Run analyses
-                    analysis_tasks = [
-                        loop.run_in_executor(self.executor, self.strategy.analyze, c['df']) 
-                        for c in scan_candidates
-                    ]
-                    results = await asyncio.gather(*analysis_tasks)
-                    
-                    for i, signal in enumerate(results):
-                        if signal and signal['score'] >= config.MIN_SCORE:
-                            cand = scan_candidates[i]
-                            # Execute
-                            price = cand['df'].iloc[-1]['close']
-                            move_pct = abs(config.STOP_LOSS_ROI / config.LEVERAGE / 100)
-                            
-                            sl, tp = 0, 0
-                            if signal['direction'] == 'LONG':
-                                sl = price * (1 - move_pct)
-                                tp = price * (1 + (abs(config.TAKE_PROFIT_ROI) / config.LEVERAGE / 100))
-                            else:
-                                sl = price * (1 + move_pct)
-                                tp = price * (1 - (abs(config.TAKE_PROFIT_ROI) / config.LEVERAGE / 100))
-                                
-                            amount = self.market.balance * (config.CAPITAL_PER_TRADE_PCT / 100)
-                            if amount < 6.0: amount = 6.0 # Force min size
-                            if amount > self.market.balance: continue # Skip if poor
-                            await self.market.open_position(cand['symbol'], signal['direction'], amount, sl, tp)
-
+            await self.scan_loop_tick()
             await asyncio.sleep(config.SCAN_INTERVAL)
+
+    async def scan_loop_tick(self):
+        """Single iteration of Scalp Scanner"""
+        try:
+            # 1. Check open slots
+            if len(self.market.positions) >= config.MAX_OPEN_POSITIONS:
+                return
+
+            symbols = await self.market.get_top_vol_symbols()
+            
+            loop = asyncio.get_running_loop()
+            
+            pending_symbols = []
+            for symbol in symbols[:30]:
+                if symbol in self.market.positions: continue
+                pending_symbols.append(symbol)
+            
+            if not pending_symbols: return
+
+            # 2. Parallel Analysis
+            scan_candidates = []
+            for symbol in pending_symbols:
+                df = await self.market.get_klines(symbol, interval=config.TIMEFRAME)
+                if not df.empty:
+                    scan_candidates.append({'symbol': symbol, 'df': df})
+            
+            if not scan_candidates: return
+
+            # Run analyses
+            analysis_tasks = [
+                loop.run_in_executor(self.executor, self.strategy.analyze, c['df']) 
+                for c in scan_candidates
+            ]
+            results = await asyncio.gather(*analysis_tasks)
+            
+            # 3. Execution Logic
+            for i, signal in enumerate(results):
+                if signal and signal['score'] >= config.MIN_SCORE:
+                    cand = scan_candidates[i]
+                    # Execute
+                    price = cand['df'].iloc[-1]['close']
+                    move_pct = abs(config.STOP_LOSS_ROI / config.LEVERAGE / 100)
+                    
+                    sl, tp = 0, 0
+                    if signal['direction'] == 'LONG':
+                        sl = price * (1 - move_pct)
+                        tp = price * (1 + (abs(config.TAKE_PROFIT_ROI) / config.LEVERAGE / 100))
+                    else:
+                        sl = price * (1 + move_pct)
+                        tp = price * (1 - (abs(config.TAKE_PROFIT_ROI) / config.LEVERAGE / 100))
+                        
+                    amount = self.market.balance * (config.CAPITAL_PER_TRADE_PCT / 100)
+                    if amount < 6.0: amount = 6.0 # Force min size
+                    if amount > self.market.balance: continue # Skip if poor
+                    await self.market.open_position(cand['symbol'], signal['direction'], amount, sl, tp)
+
+        except Exception as e:
+            logger.error(f"Scan Loop Error: {e}")
 
 if __name__ == "__main__":
     import os

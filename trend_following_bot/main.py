@@ -56,18 +56,25 @@ class TrendBot:
         )
         
     async def safety_loop(self):
-        """REAL-TIME SAFETY: Monitors SL/TP & Exits (Every 5s)"""
+        """SAFETY MONITOR: Protects Capital"""
         logger.info("Started Safety Monitor...")
         while self.running:
-            try:
-                # 1. Manage Open Positions (CRITICAL)
-                await self.manage_positions()
-                
-                await asyncio.sleep(config.SAFETY_CHECK_INTERVAL)
-                
-            except Exception as e:
-                logger.error(f"Safety Loop Error: {e}")
-                await asyncio.sleep(1)
+            await self.safety_loop_tick()
+            await asyncio.sleep(1)
+
+    async def safety_loop_tick(self):
+        """Single iteration of safety check (Public for Fortress)"""
+        try:
+            # 1. Manage Open Positions (CRITICAL)
+            await self.manage_positions()
+            
+            # The original safety_loop had a sleep here.
+            # For safety_loop_tick, we might want to keep it short or let the caller manage sleep.
+            # Given the instruction, the sleep is moved to the calling safety_loop.
+            
+        except Exception as e:
+            logger.error(f"Safety Loop Error: {e}")
+            # No sleep here, as the calling loop handles it.
 
     async def reporting_loop(self):
         """REPORTING LOOP: Logs Status Loop (Every 5m)"""
