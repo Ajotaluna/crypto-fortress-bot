@@ -13,11 +13,15 @@ from trend_following_bot.patterns import PatternDetector
 from scalping_bot_v2.strategy import ScalperStrategy
 
 # Setup logging
+# Setup logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s [%(levelname)s] %(message)s',
-    handlers=[logging.StreamHandler(sys.stdout)]
+    handlers=[logging.StreamHandler(sys.stdout)],
+    force=True # Force reconfiguration to override child modules if needed
 )
+# Ensure stdout is flushed (crucial for Docker logs)
+sys.stdout.reconfigure(line_buffering=True)
 logger = logging.getLogger("FortressBot")
 
 class FortressBot:

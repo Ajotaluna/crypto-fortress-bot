@@ -30,7 +30,7 @@ To START the bot (PRODUCTION MODE), run this command:
 sudo docker run -d --restart=always --name fortress-bot \\
   -e API_KEY='YOUR_REAL_API_KEY' \\
   -e API_SECRET='YOUR_REAL_API_SECRET' \\
-  fortress-bot python FortressBot/fortress_main.py
+  fortress-bot python -u FortressBot/fortress_main.py
 
 To VIEW LOGS:
 sudo docker logs -f fortress-bot
