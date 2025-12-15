@@ -102,11 +102,10 @@ class FortressBot:
                     continue
 
                 if "TRENDING" in self.current_regime:
-                    # Use Trend Logic (modified Main from TrendBot)
-                    # We can call the logic directly or refactor
+                    logger.info(f"⚡ REGIME: TRENDING. Invoking Trend Bot Strategy...")
                     await self.run_trend_logic()
                 elif "RANGING" in self.current_regime:
-                    # Use Scalping Logic
+                    logger.info(f"⚖️ REGIME: RANGING. Invoking Scalp Bot Strategy...")
                     await self.run_scalp_logic()
                 
                 await asyncio.sleep(60) # Scan loop
@@ -118,8 +117,8 @@ class FortressBot:
         """Delegates to Trend Bot Logic"""
         # We instantiate on demand or keep persistent? Persistent is better for state.
         if not hasattr(self, 'trend_bot'):
-            from trend_following_bot.main import TrendFollowingBot
-            self.trend_bot = TrendFollowingBot(self.market.is_dry_run, self.market.api_key, self.market.api_secret)
+            from trend_following_bot.main import TrendBot
+            self.trend_bot = TrendBot(self.market.is_dry_run, self.market.api_key, self.market.api_secret)
             # Share market instance to avoid double connection/rate limits? 
             # Better to reuse self.market if possible, but bots might be coupled to their own.
             # For quick prototype, let them have their own market data but sync balance.
