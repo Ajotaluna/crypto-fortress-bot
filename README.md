@@ -39,7 +39,7 @@ docker build -t fortress-bot .
 docker run -d --restart=always --name fortress-bot \
   -e API_KEY='YOUR_REAL_KEY' \
   -e API_SECRET='YOUR_REAL_SECRET' \
-  fortress-bot python -u FortressBot/fortress_main.py
+  fortress-bot python -u fortress_main.py
 ```
 
 ### Option C: Simulation / Testing
@@ -49,7 +49,7 @@ Want to test the logic without money? Use `DRY_RUN`:
 docker run -d --name fortress-test \
   -e DRY_RUN='true' \
   -e API_KEY='x' -e API_SECRET='y' \
-  fortress-bot python -u FortressBot/fortress_main.py
+  fortress-bot python -u fortress_main.py
 ```
 
 ## ⚙️ Key Configuration (`config.py`)
