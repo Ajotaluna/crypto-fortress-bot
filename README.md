@@ -14,6 +14,25 @@ The bot uses a central "Brain" (`fortress_main.py`) that analyzes BTC/Market con
 | **RANGING** 🦀 | `ADX < 20` OR `Choppy Volume` | **Scalp Bot** | Quick reversions (mins). Buys Low / Sells High. |
 | **DUMPING** 🩸 | `Price < EMA200` (1H) | **Protective** | Only Shorts allowed (or Cash is King). |
 
+### 🆕 New Features (v2.1 Update)
+We have overhauled the **Trend Following** logic to prioritize capital preservation and high-quality entries over frequency.
+
+#### 1. "The Historian" (Analysis Filter) 📜
+- **Logic**: Inspects **90 Days** of daily candles before trading.
+- **Rule**: If the Macro Trend (Daily) is Bearish, **NO Longs** are allowed, regardless of 15m signals.
+
+#### 2. "The King's Guard" (BTC Correlation) 👑
+- **Logic**: Respects the King (Bitcoin).
+- **Rule**: If **BTCUSDT** is dumping (Price < EMA20 on 15m), the bot **PAUSES** all scanning.
+
+#### 3. Dynamic Blacklist (Deep Learning) 🧠
+- **Logic**: "Fool me once, shame on you. Fool me twice, banned."
+- **Rule**: If a pair hits Stop Loss **2 times in 24h**, it is **BANNED** for 48 hours.
+
+#### 4. "Speculative Bulla" (Volume Shock) 🐂
+- **Logic**: Detects massive institutional volume injections.
+- **Rule**: If Volume Velocity > 300% (3x Average), score is boosted (+20) to capture news-driven pumps potentially overriding softer filters.
+
 ## 🛠️ Installation & Usage
 
 ### Option A: 1-Click AWS Deployment (Recommended)

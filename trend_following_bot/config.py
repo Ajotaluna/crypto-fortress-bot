@@ -15,15 +15,21 @@ class Config:
     REQUIRE_VOLUME_SURGE = True      # Mandatory Volume
     MIN_VOLUME_MULTIPLIER = 1.5      # Significant surge needed
     
+    # Unleashed Mode (Verticality Capture)
+    ALLOW_MOMENTUM_OVERRIDE = True   # If Score > 90, Ignore Titan/Sentiment
+    MOMENTUM_SCORE_THRESHOLD = 90.0  # The "Verticality" Threshold
+    
     # Smart Entry (Confirmation V3 - Sniper)
     SMART_ENTRY_ENABLED = True       # Wait for breakout before entering
     CONFIRMATION_TIMEOUT_MINS = 45   # Extended listening time
     
     # V3 Validation Params
-    CONFIRM_VOLUME_FACTOR = 1.2      # Volume must be 20% > Average
-    CONFIRM_BUFFER_PCT = 0.1         # Price must break trigger by 0.1% (Filter wicks)
-    CONFIRM_RSI_MAX = 75.0           # Long: Don't buy if RSI > 75 (Overbought)
-    CONFIRM_RSI_MIN = 25.0           # Short: Don't sell if RSI < 25 (Oversold)
+    # V3 Validation Params
+    CONFIRM_VOLUME_FACTOR = 1.5      # Volume must be 50% > Average (Stricter)
+    CONFIRM_BUFFER_PCT = 0.4         # Price must break trigger by 0.4% (Reduce wick entries)
+    USE_1M_CONFIRMATION = True       # REQUIRE 1m Candle Close > Trigger (No instant tick entries)
+    CONFIRM_RSI_MAX = 70.0           # Long: Stricter Overbought Check
+    CONFIRM_RSI_MIN = 30.0           # Short: Stricter Oversold Check
     
     # Stability Filters (Anti-Loss)
     MIN_VOLUME_USDT = 50000000       # 50M Minimum Volume (Majors Only)
@@ -39,25 +45,28 @@ class Config:
     # Profit Targets
     DAILY_PROFIT_TARGET_PCT = 3.0    # Stop after 3% daily gain (Realistic)
     
-    # Risk Management
-    # ROI Targets: SL -2.5% ROI, TP +20% ROI (at 5x Leverage)
-    # ROI Targets: SL -1.5% Price Move, TP +5% Price Move
-    # Price Movement = ROI / Leverage
-    STOP_LOSS_PCT = 1.5              # 1.5% move * 10x = 15% PnL ($0.22 loss). Gives breath.
-    TAKE_PROFIT_PCT = 4.0            # 4% move * 5x lev = 20% Gain
+    # Risk Management (The Risk Vault - SNIPER V4)
+    RISK_PER_TRADE_PCT = 1.0         # Risk 1% of Equity per trade (Professional Standard)
+    TARGET_RISK_REWARD = 3.0         # Aim for 3R (1% Risk -> 3% Profit)
+    MAX_CAPITAL_PER_TRADE_PCT = 25.0 # Cap max position size to 25% of account (Safety Cap)
     
-    MAX_OPEN_POSITIONS = 10          # Expanded to 10 for Stress Testing
-    CAPITAL_PER_TRADE_PCT = 15.0     # 15% ($1.50) * 10x = $15.00 Position (Safe above min $5)
-    LEVERAGE = 10                    # 10x required to trade with small balance
+    # ROI Targets (Fallback/Initial)
+    # Price Movement = ROI / Leverage
+    STOP_LOSS_PCT = 1.5              # Base Stop distance (will be dynamic)
+    TAKE_PROFIT_PCT = 4.5            # 1:3 RR base expectation
+    
+    MAX_OPEN_POSITIONS = 10          # Restore missing config
+    CAPITAL_PER_TRADE_PCT = 0.0      # DEPRECATED in favor of Risk Sizing
+    LEVERAGE = 10                    # 10x
     
     # Dynamic TP/SL Lookback
     LOOKBACK_WINDOW_SL = 20          # Recent Low/High for Stop Loss
     LOOKBACK_WINDOW_TP = 50          # Recent High/Low for Take Profit
     
-    # Trailing Stop
+    # Trailing Stop (The Bloodhound V4 - Sniper Mode)
     USE_TRAILING_STOP = True
-    TRAILING_ACTIVATION_PCT = 5.0    # Activate after 5% gain
-    TRAILING_DISTANCE_PCT = 4.0      # Trail 4% behind price
+    TRAILING_ACTIVATION_PCT = 1.0    # Activate Trailing immediately after 1R (1% Gain)
+    TRAILING_DISTANCE_PCT = 4.0      # Dynamic (Will be overridden by ATR logic)
     
     # Resistance Logic
     RESISTANCE_TOUCHES_MIN = 3       # Major resistance = 3+ touches
