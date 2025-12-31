@@ -11,23 +11,12 @@ sudo apt-get install -y docker.io git python3-pip
 sudo systemctl start docker
 sudo systemctl enable docker
 
-# Build Docker Image
-echo "Building FortressBot Docker Image..."
-sudo docker build -t fortress-bot .
-
 # Stop Old Bots (Clean Slate)
 echo "Stopping old bots if running..."
 sudo docker stop fortress-bot || true
 sudo docker rm fortress-bot || true
 
-echo "
-=========================================================
-       FORTRESS BOT DEPLOYED SUCCESSFULLY! 🚀
-=========================================================
-
-To START the bot (PRODUCTION MODE), run this command:
-
-# 4. Build Docker Image
+# Build Docker Image
 echo ">>> Building FortressBot Docker Image (Hybrid Titan)..."
 sudo docker build -t fortress-bot .
 
@@ -44,5 +33,3 @@ echo "  fortress-bot python -u run_fortress_bot.py"
 echo ""
 echo "To VIEW LOGS:"
 echo "sudo docker logs -f fortress-bot"
-
-"
