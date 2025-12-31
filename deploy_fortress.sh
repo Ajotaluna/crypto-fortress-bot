@@ -27,12 +27,22 @@ echo "
 
 To START the bot (PRODUCTION MODE), run this command:
 
-sudo docker run -d --restart=always --name fortress-bot \\
-  -e API_KEY='YOUR_REAL_API_KEY' \\
-  -e API_SECRET='YOUR_REAL_API_SECRET' \\
-  -e DRY_RUN='false' \\
-  fortress-bot python -u run_fortress_bot.py
+# 4. Build Docker Image
+echo ">>> Building FortressBot Docker Image (Hybrid Titan)..."
+sudo docker build -t fortress-bot .
 
-To VIEW LOGS:
-sudo docker logs -f fortress-bot
+echo "=========================================="
+echo ">>> FORTRESS BOT UPDATED! 🚀"
+echo "=========================================="
+echo "To START the bot (with REAL MONEY), run this command:"
+echo ""
+echo "sudo docker run -d --restart=always --name fortress-bot \\"
+echo "  -e API_KEY='YOUR_REAL_API_KEY' \\"
+echo "  -e API_SECRET='YOUR_REAL_API_SECRET' \\"
+echo "  -e DRY_RUN='false' \\"
+echo "  fortress-bot python -u run_fortress_bot.py"
+echo ""
+echo "To VIEW LOGS:"
+echo "sudo docker logs -f fortress-bot"
+
 "

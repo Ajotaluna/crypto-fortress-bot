@@ -8,7 +8,8 @@ from config import config
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 # Import Fortress Bot
-from FortressBot.fortress_main import FortressBot
+# Inside Docker /app, this is a direct import
+from fortress_main import FortressBot
 
 # Setup Logging
 logging.basicConfig(

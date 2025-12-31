@@ -16,7 +16,7 @@ from scalper_strategy import ScalperStrategy
 
 # Import Trend Logic Components - FROM INTERNAL FORK
 # We use the PatternDetector from the internal 'trend_following_bot' directory
-from FortressBot.trend_following_bot.patterns import PatternDetector, SentimentAnalyzer
+from trend_following_bot.patterns import PatternDetector, SentimentAnalyzer
 
 # Setup logging
 logging.basicConfig(
