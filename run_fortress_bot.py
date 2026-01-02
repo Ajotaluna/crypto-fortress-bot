@@ -24,6 +24,11 @@ logger = logging.getLogger("Launcher")
 
 async def main():
     logger.info("🚀 LAUNCHING FORTRESS BOT (Hybrid Protocol)...")
+    
+    # Initialize Configuration from Environment
+    is_test_mode = os.getenv('DRY_RUN', 'true').lower() == 'true'
+    config.DRY_RUN = is_test_mode # Inject into config
+    
     logger.info("---------------------------------------------")
     logger.info(f"Mode: {'DRY RUN' if config.DRY_RUN else 'REAL MONEY'}")
     logger.info(f"Leverage: {config.LEVERAGE}x")
