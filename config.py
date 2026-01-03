@@ -41,7 +41,10 @@ class Config:
     # Profit Targets
     DAILY_PROFIT_TARGET_PCT = 3.0    # Stop after 3% daily gain (Realistic)
     
-    # Risk Management
+    # Risk Management (The Risk Vault - SNIPER V4)
+    RISK_PER_TRADE_PCT = 1.0         # Risk 1% of Equity per trade (Professional Standard)
+    MAX_CAPITAL_PER_TRADE_PCT = 25.0 # Cap max position size to 25% of account
+    
     # ROI Targets: SL -2.5% ROI, TP +20% ROI (at 5x Leverage)
     # ROI Targets: SL -1.5% Price Move, TP +5% Price Move
     # Price Movement = ROI / Leverage
